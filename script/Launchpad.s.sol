@@ -8,9 +8,9 @@ contract TokenDeployerScript is Script {
     function run() external {
         vm.startBroadcast();
 
-        Launchpad deployer = new Launchpad();
+        Launchpad launchpad = new Launchpad();
 
-        console.log("Launchpad deployed at:", address(deployer));
+        console.log("Launchpad deployed at:", address(launchpad));
 
         vm.stopBroadcast();
     }
