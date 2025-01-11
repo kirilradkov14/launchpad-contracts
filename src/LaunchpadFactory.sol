@@ -5,8 +5,10 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 import { ITokenDeployer } from "./interfaces/ITokenDeployer.sol";
+import { ILaunchpadFactory } from "./interfaces//launchpad/ILaunchpadFactory.sol";
+import { ILaunchpad } from "./interfaces/launchpad/ILaunchpad.sol";
 
-contract LaunchpadFactory is Ownable(msg.sender), Pausable {
+contract LaunchpadFactory is Ownable(msg.sender), Pausable, ILaunchpadFactory{
     using Address for address;
 
     // initialize(address,address,address)
@@ -85,9 +87,8 @@ contract LaunchpadFactory is Ownable(msg.sender), Pausable {
 
         if (token == address(0)) revert LaunchpadFactoryInvalidToken();
 
-        (bool success, ) = launchpad.call(
-            abi.encodeWithSelector(INITIALIZE_SELECTOR, token, wethAddress, uniswapV2Router)
-        );
+        bytes memory data = abi.encodeCall(ILaunchpad.initialize, (token, wethAddress, uniswapV2Router));
+        (bool success, ) = launchpad.call(data);
 
         if (!success) revert LaunchpadFactoryInitializationFailed();
 

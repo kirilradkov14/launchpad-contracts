@@ -6,16 +6,17 @@ import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.s
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 import { ReentrancyGuardTransient } from "@openzeppelin/contracts/utils/ReentrancyGuardTransient.sol"; 
 import { Formula } from "./libraries/Formula.sol";
+import { ILaunchpad } from "./interfaces/launchpad/ILaunchpad.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IWETH } from "./interfaces/IWETH.sol";
-import { IUniswapV2Router02 } from "./interfaces/IUniswapV2Router02.sol";
-import { IUniswapV2Factory } from "./interfaces/IUniswapV2Factory.sol";
+import { IUniswapV2Router02 } from "./interfaces/uniswap/IUniswapV2Router02.sol";
+import { IUniswapV2Factory } from "./interfaces/uniswap/IUniswapV2Factory.sol";
 
 /**
  * @title Launchpad
  * @dev Launchpad contract implementing an exponential bonding curve.
  */
-contract Launchpad is Initializable, ReentrancyGuardTransient {
+contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
     using SafeERC20 for IERC20;
     using Address for address payable;
     
