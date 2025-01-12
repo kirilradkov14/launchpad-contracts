@@ -11,9 +11,6 @@ import { ILaunchpad } from "./interfaces/launchpad/ILaunchpad.sol";
 contract LaunchpadFactory is Ownable(msg.sender), Pausable, ILaunchpadFactory{
     using Address for address;
 
-    // initialize(address,address,address)
-    bytes4 private constant INITIALIZE_SELECTOR = 0xc0c53b8b;
-
     address public immutable implementation;
     address public immutable wethAddress;
     address public immutable uniswapV2Router;
