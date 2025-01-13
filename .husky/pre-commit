@@ -1,0 +1,29 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run Forge Formatting Check
+echo "Running Forge Formatting Check..."
+forge fmt --check
+if [ $? -ne 0 ]; then
+  echo "Formatting check failed. Please run 'forge fmt' to fix the issues."
+  exit 1
+fi
+
+# Run Forge Build
+echo "Running Forge Build..."
+forge build
+if [ $? -ne 0 ]; then
+  echo "Build failed. Please fix the issues before committing."
+  exit 1
+fi
+
+# Run Forge Tests
+echo "Running Forge Tests..."
+forge test
+if [ $? -ne 0 ]; then
+  echo "Tests failed. Please fix the issues before committing."
+  exit 1
+fi
+
+echo "All checks passed. Proceeding with commit."
+exit 0
