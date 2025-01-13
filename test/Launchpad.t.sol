@@ -26,18 +26,14 @@ contract LaunchpadTest is Test, ArtifactStorage {
         // UniswapV2Factory deployment
         address feeToSetter = vm.addr(1);
         // Encode constructor arguments with the bytecode
-        bytes memory uniswapFactoryBytecode = abi.encodePacked(
-            ArtifactStorage.uniswapV2Factory, 
-            abi.encode(feeToSetter)
-        );
+        bytes memory uniswapFactoryBytecode =
+            abi.encodePacked(ArtifactStorage.uniswapV2Factory, abi.encode(feeToSetter));
         uniswapFactory = _deployBytecode(uniswapFactoryBytecode);
         require(uniswapFactory != address(0), "UniswapV2Factory deployment failed");
 
         // UniswapV2Router deployment
-        bytes memory routerBytecodeWithArgs = abi.encodePacked(
-            ArtifactStorage.uniswapV2Router, 
-            abi.encode(uniswapFactory, weth)
-        );
+        bytes memory routerBytecodeWithArgs =
+            abi.encodePacked(ArtifactStorage.uniswapV2Router, abi.encode(uniswapFactory, weth));
         uniswapRouter = _deployBytecode(routerBytecodeWithArgs);
         require(uniswapRouter != address(0), "Uniswap Router deployment failed");
 
@@ -50,16 +46,11 @@ contract LaunchpadTest is Test, ArtifactStorage {
         require(address(implementation) != address(0), "Implementation deployment failed");
 
         // LaunchpadFactory deployment
-        launchpadFactory = new LaunchpadFactory(
-            address(implementation),
-            weth,
-            uniswapRouter,
-            address(tokenDeployer)
-        );
+        launchpadFactory = new LaunchpadFactory(address(implementation), weth, uniswapRouter, address(tokenDeployer));
         require(address(launchpadFactory) != address(0), "LaunchpadFactory deployment failed");
     }
 
-   function testProxyCreation() public {
+    function testProxyCreation() public {
         string memory tokenName = "Test Token";
         string memory tokenSymbol = "TTKN";
 
@@ -117,7 +108,7 @@ contract LaunchpadTest is Test, ArtifactStorage {
         proxy.buyTokens{value: 99 ether}(0);
         assertTrue(proxy.isMigrated() == false, "LP already migrated");
         assertTrue(proxy.ethSupply() <= proxy.THRESHOLD(), "ETH Supply Reached Threshold");
-        
+
         // Buy 2 tokens, triggering LP migration
         proxy.buyTokens{value: 2 ether}(0);
         assertTrue(proxy.isMigrated() == true, "LP already migrated");

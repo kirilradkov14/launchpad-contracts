@@ -10,11 +10,12 @@ import "../src/token/TokenDeployer.sol";
 contract TokenDeployerScript is Script {
     function run() external {
         vm.startBroadcast();
-        
+
         WETH weth = new WETH();
         TokenDeployer deployer = new TokenDeployer();
         Launchpad launchpad = new Launchpad();
-        LaunchpadFactory factory = new LaunchpadFactory(address(launchpad), address(weth), address(deployer), address(deployer));
+        LaunchpadFactory factory =
+            new LaunchpadFactory(address(launchpad), address(weth), address(deployer), address(deployer));
 
         console.log("LaunchpadFactory deployed at:", address(factory));
 

@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: true
 
-    name: Foundry project
+    name: Launchpad Contracts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,10 +29,10 @@ jobs:
         run: |
           forge --version
 
-      # - name: Run Forge fmt
-      #   run: |
-      #     forge fmt --check
-      #   id: fmt
+      - name: Run Forge fmt
+        run: |
+          forge fmt --check
+        id: fmt
 
       - name: Run Forge build
         run: |

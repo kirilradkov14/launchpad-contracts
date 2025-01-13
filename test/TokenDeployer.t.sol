@@ -24,7 +24,7 @@ contract TokenDeployerTest is Test {
         string memory symbol = "TST";
 
         address predictedAddress = deployer.deployTokenWithCreate2(beneficiary, salt, name, symbol);
-        
+
         Token deployedToken = Token(predictedAddress);
 
         // Validate that the deployed token has the correct initial parameters

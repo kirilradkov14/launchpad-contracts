@@ -9,14 +9,20 @@ import "./Math64x64.sol";
  */
 library Formula {
     using Math64x64 for int128;
-    
-    /** To scale fixed point arithmetic  */
+
+    /**
+     * To scale fixed point arithmetic
+     */
     uint256 public constant SCALING_FACTOR = 1e18;
 
-    /** Base Price for a token in wei (P0) */
+    /**
+     * Base Price for a token in wei (P0)
+     */
     uint256 public constant BASE_PRICE = 30_677_636_300;
 
-    /** The exponential factor determines the steepness of the curve (K)  */
+    /**
+     * The exponential factor determines the steepness of the curve (K)
+     */
     uint256 public constant EXP_FACTOR = 4_000_000;
 
     error FormulaInvalidTokenAmount();
@@ -34,7 +40,7 @@ library Formula {
     {
         if (ethAmountIn == 0) return 0;
 
-        int128 k = Math64x64.divu(EXP_FACTOR, 1e8); 
+        int128 k = Math64x64.divu(EXP_FACTOR, 1e8);
         int128 P0 = Math64x64.divu(BASE_PRICE, 1e18);
         int128 ethSupplyFixed = Math64x64.divu(ethSupply, 1e18);
         int128 ethAmountInFixed = Math64x64.divu(ethAmountIn, 1e18);
@@ -60,11 +66,7 @@ library Formula {
      * @param tokenAmountIn The number of tokens being sold (with 18 decimals).
      * @return ethAmount The amount of ETH to return based on the market cap (in wei).
      */
-    function calculateSellReturn(uint256 ethSupply, uint256 tokenAmountIn)
-        internal
-        pure
-        returns (uint256 ethAmount)
-    {
+    function calculateSellReturn(uint256 ethSupply, uint256 tokenAmountIn) internal pure returns (uint256 ethAmount) {
         if (tokenAmountIn == 0) return 0;
 
         int128 k = Math64x64.divu(EXP_FACTOR, 1e8);
@@ -80,11 +82,11 @@ library Formula {
         int128 tokenAmountInFixed = Math64x64.divu(tokenAmountIn, SCALING_FACTOR);
         int128 newTotalTokensSoldFixed = totalTokensSoldFixed.sub(tokenAmountInFixed);
 
-        if(newTotalTokensSoldFixed < 0) revert FormulaInvalidTokenAmount();
+        if (newTotalTokensSoldFixed < 0) revert FormulaInvalidTokenAmount();
 
         int128 expNegkENew = one.sub(k.mul(P0).mul(newTotalTokensSoldFixed));
 
-        if(expNegkENew <= 0) revert FormulaInvalidTokenAmount();
+        if (expNegkENew <= 0) revert FormulaInvalidTokenAmount();
 
         int128 ethSupplyNewFixed = (expNegkENew.ln().neg()).div(k);
 
