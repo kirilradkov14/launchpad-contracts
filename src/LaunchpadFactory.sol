@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
-import { Address } from "@openzeppelin/contracts/utils/Address.sol";
-import { ITokenDeployer } from "./interfaces/ITokenDeployer.sol";
-import { ILaunchpadFactory } from "./interfaces//launchpad/ILaunchpadFactory.sol";
-import { ILaunchpad } from "./interfaces/launchpad/ILaunchpad.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {ITokenDeployer} from "./interfaces/ITokenDeployer.sol";
+import {ILaunchpadFactory} from "./interfaces//launchpad/ILaunchpadFactory.sol";
+import {ILaunchpad} from "./interfaces/launchpad/ILaunchpad.sol";
 
-contract LaunchpadFactory is Ownable(msg.sender), Pausable, ILaunchpadFactory{
+contract LaunchpadFactory is Ownable(msg.sender), Pausable, ILaunchpadFactory {
     using Address for address;
 
     address public immutable implementation;
     address public immutable wethAddress;
     address public immutable uniswapV2Router;
     address public immutable tokenDeployer;
-    
+
     address[] public allLaunchpads;
 
     error LaunchpadFactoryInvalidImplementation();
@@ -28,12 +28,7 @@ contract LaunchpadFactory is Ownable(msg.sender), Pausable, ILaunchpadFactory{
 
     event LaunchpadCreation(address indexed launchpad, address indexed token);
 
-    constructor(
-        address _implementation,
-        address _weth,
-        address _uniswapV2Router,
-        address _tokenDeployer
-    ) {
+    constructor(address _implementation, address _weth, address _uniswapV2Router, address _tokenDeployer) {
         if (_implementation == address(0)) revert LaunchpadFactoryInvalidImplementation();
         if (_weth == address(0)) revert LaunchpadFactoryInvalidWETH();
         if (_uniswapV2Router == address(0)) revert LaunchpadFactoryInvalidRouter();
@@ -52,10 +47,7 @@ contract LaunchpadFactory is Ownable(msg.sender), Pausable, ILaunchpadFactory{
      * @param _symbol The symbol of the token to be deployed.
      * @return launchpad The address of the newly created launchpad.
      */
-    function createLaunchpad(
-        string memory _name,
-        string memory _symbol
-    )
+    function createLaunchpad(string memory _name, string memory _symbol)
         external
         payable
         whenNotPaused
@@ -72,20 +64,15 @@ contract LaunchpadFactory is Ownable(msg.sender), Pausable, ILaunchpadFactory{
             mstore(0x20, or(shl(0x78, impl), 0x5af43d82803e903d91602b57fd5bf3))
             launchpad := create2(0, 0x09, 0x37, salt)
         }
-        
+
         if (launchpad == address(0)) revert LaunchpadFactoryDeployFailed();
-        
-        address token = ITokenDeployer(tokenDeployer).deployTokenWithCreate2(
-            launchpad,
-            salt,
-            _name,
-            _symbol
-        );
+
+        address token = ITokenDeployer(tokenDeployer).deployTokenWithCreate2(launchpad, salt, _name, _symbol);
 
         if (token == address(0)) revert LaunchpadFactoryInvalidToken();
 
         bytes memory data = abi.encodeCall(ILaunchpad.initialize, (token, wethAddress, uniswapV2Router));
-        (bool success, ) = launchpad.call(data);
+        (bool success,) = launchpad.call(data);
 
         if (!success) revert LaunchpadFactoryInitializationFailed();
 

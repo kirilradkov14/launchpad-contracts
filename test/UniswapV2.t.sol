@@ -30,9 +30,7 @@ contract UniswapV2 is Test, ArtifactStorage {
 
     receive() external payable {}
 
-    function setUp() public {
-
-    }
+    function setUp() public {}
 
     function testWethDeployment() public {
         weth = _deployBytecode(ArtifactStorage.wethBytecode);
@@ -59,7 +57,7 @@ contract UniswapV2 is Test, ArtifactStorage {
         address feeToSetter = vm.addr(1);
         bytes memory constructorArgs = abi.encode(feeToSetter);
         bytes memory bytecodeWithArgs = abi.encodePacked(ArtifactStorage.uniswapV2Factory, constructorArgs);
-        
+
         uniswapFactory = _deployBytecode(bytecodeWithArgs);
         // Assert the deployment succeeded
         assertTrue(uniswapFactory != address(0), "Uniswap Factory deployment failed");
@@ -92,7 +90,8 @@ contract UniswapV2 is Test, ArtifactStorage {
         // Deploy Factory
         address feeToSetter = vm.addr(1);
         bytes memory factoryConstructorArgs = abi.encode(feeToSetter);
-        bytes memory factoryBytecodeWithArgs = abi.encodePacked(ArtifactStorage.uniswapV2Factory, factoryConstructorArgs);
+        bytes memory factoryBytecodeWithArgs =
+            abi.encodePacked(ArtifactStorage.uniswapV2Factory, factoryConstructorArgs);
         uniswapFactory = _deployBytecode(factoryBytecodeWithArgs);
         assertTrue(uniswapFactory != address(0), "Uniswap Factory deployment failed");
 

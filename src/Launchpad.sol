@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import { Address } from "@openzeppelin/contracts/utils/Address.sol";
-import { ReentrancyGuardTransient } from "@openzeppelin/contracts/utils/ReentrancyGuardTransient.sol"; 
-import { Formula } from "./libraries/Formula.sol";
-import { ILaunchpad } from "./interfaces/launchpad/ILaunchpad.sol";
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { IWETH } from "./interfaces/IWETH.sol";
-import { IUniswapV2Router02 } from "./interfaces/uniswap/IUniswapV2Router02.sol";
-import { IUniswapV2Factory } from "./interfaces/uniswap/IUniswapV2Factory.sol";
+import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {ReentrancyGuardTransient} from "@openzeppelin/contracts/utils/ReentrancyGuardTransient.sol";
+import {Formula} from "./libraries/Formula.sol";
+import {ILaunchpad} from "./interfaces/launchpad/ILaunchpad.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IWETH} from "./interfaces/IWETH.sol";
+import {IUniswapV2Router02} from "./interfaces/uniswap/IUniswapV2Router02.sol";
+import {IUniswapV2Factory} from "./interfaces/uniswap/IUniswapV2Factory.sol";
 
 /**
  * @title Launchpad
@@ -19,7 +19,7 @@ import { IUniswapV2Factory } from "./interfaces/uniswap/IUniswapV2Factory.sol";
 contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
     using SafeERC20 for IERC20;
     using Address for address payable;
-    
+
     // --- Constants ---
     uint256 public constant THRESHOLD = 100 ether;
     uint256 public constant TOTAL_TOKENS = 1_000_000_000 ether;
@@ -43,7 +43,7 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
     error LaunchpadInsufficientOutputAmount();
     error LaunchpadInsufficientLiquidity();
     error LaunchpadInvalidAddress();
-    
+
     // --- Events ---
     event LiquidityMigration(address indexed pair, uint256 ethAmount, uint256 tokenAmount);
     event TokenPurchase(address indexed recipient, uint256 ethAmountSent, uint256 tokenAmountReceived);
@@ -60,7 +60,7 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
     constructor() {
         _disableInitializers(); // Prevents initialization hijack
     }
-    
+
     receive() external payable {}
 
     /**
@@ -69,14 +69,7 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
      * @param _wethAddress The address of the WETH contract.
      * @param _uniswapRouter The address of the Uniswap V2 router.
      */
-    function initialize(
-        address _tokenAddress, 
-        address _wethAddress, 
-        address _uniswapRouter
-    ) 
-        external 
-        initializer     
-    {
+    function initialize(address _tokenAddress, address _wethAddress, address _uniswapRouter) external initializer {
         isMigrated = false;
         tokenAddress = _tokenAddress;
         uniswapRouter = IUniswapV2Router02(_uniswapRouter);
@@ -85,7 +78,6 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
 
         IERC20(tokenAddress).approve(_uniswapRouter, type(uint256).max);
     }
-
 
     /**
      * @notice Swap exact amount of ETH for an amount of tokens.
@@ -108,7 +100,7 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
             amountOut = _fillOrder(ethAmount, totalSupplyAfterETH);
             return amountOut;
         }
-        
+
         amountOut = Formula.calculatePurchaseReturn(ethSupply, ethAmount);
         if (amountOut > tokenSupply) revert LaunchpadInsufficientLiquidity();
         if (amountOut < amountOutMin) revert LaunchpadInsufficientOutputAmount();
@@ -123,7 +115,6 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
 
         return amountOut;
     }
-
 
     /**
      * @dev Swaps an exact amount of tokens for ETH.
@@ -161,16 +152,16 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
      * @param amountIn Amount of tokens to sell.
      * @return amountOut The amount of ETH that would be received.
      */
-    function getEthersOutAtCurrentSupply(uint256 amountIn) public view returns(uint256 amountOut) {
+    function getEthersOutAtCurrentSupply(uint256 amountIn) public view returns (uint256 amountOut) {
         amountOut = Formula.calculateSellReturn(ethSupply, amountIn);
     }
-    
+
     /**
      * @dev Computes the amount of tokens you'd receive at the current supply for a given ETH amount.
      * @param amountIn Amount of ETH to spend.
      * @return amountOut The amount of tokens that would be received.
      */
-    function getTokensOutAtCurrentSupply(uint256 amountIn) public view returns(uint256 amountOut) {
+    function getTokensOutAtCurrentSupply(uint256 amountIn) public view returns (uint256 amountOut) {
         amountOut = Formula.calculatePurchaseReturn(ethSupply, amountIn);
     }
 
@@ -178,7 +169,7 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
      * @dev Fill order when contribution exceeds the threshold.
      *      Refunds any excess ETH above THRESHOLD back to the sender.
      */
-    function _fillOrder(uint256 amountIn, uint256 totalSupply) internal returns(uint256 amountOut) {
+    function _fillOrder(uint256 amountIn, uint256 totalSupply) internal returns (uint256 amountOut) {
         uint256 excess = totalSupply - THRESHOLD;
         uint256 contribution = amountIn - excess;
 
@@ -196,13 +187,12 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
         return amountOut;
     }
 
-
     /**
      * @dev Migrate liquidity to Uniswap V2 when the threshold is reached.
      * @param ethAmount Amount of ETH to add to the liquidity pool.
      * @param tokenAmount Amount of tokens to add to the liquidity pool.
      */
-    function _migrateLiquidity(uint ethAmount, uint tokenAmount) internal {
+    function _migrateLiquidity(uint256 ethAmount, uint256 tokenAmount) internal {
         if (ethAmount == 0 || tokenAmount == 0) revert LaunchpadInsufficientInputAmount();
 
         weth.withdraw(ethAmount);

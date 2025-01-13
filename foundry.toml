@@ -5,4 +5,19 @@ libs = ["lib"]
 evm_version = "cancun"
 fs_permissions = [{ access = "read", path = "./"}]
 
+[fmt]
+line_length = 120
+tab_width = 4
+quote_style = "double"
+brace_style = "next_line"
+max_empty_lines = 1
+require_leading_newline_before_return = true
+require_trailing_comma = true
+ignore = [
+    "src/interfaces/uniswap/*.sol",
+    "src/libraries/Math64x64.sol",
+    "src/mocks/*.sol",
+    "test/helpers/*.sol"
+]
+
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
