@@ -6,7 +6,9 @@ import "../src/token/TokenDeployer.sol";
 
 contract TokenDeployerScript is Script {
     function run() external {
-        vm.startBroadcast();
+        uint256 privateKey = vm.envUint("PRIVATE_KEY_1");
+
+        vm.startBroadcast(privateKey);
 
         TokenDeployer deployer = new TokenDeployer();
 

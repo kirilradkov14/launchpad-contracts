@@ -5,7 +5,7 @@ import "forge-std/Test.sol";
 import "../src/token/TokenDeployer.sol";
 import "../src/Launchpad.sol";
 import "../src/LaunchpadFactory.sol";
-import "./helpers/ArtifactStorage.sol";
+import "../helpers/ArtifactStorage.sol";
 
 contract LaunchpadTest is Test, ArtifactStorage {
     address public weth;
