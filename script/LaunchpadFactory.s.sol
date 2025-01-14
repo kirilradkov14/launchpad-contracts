@@ -4,7 +4,6 @@ pragma solidity ^0.8.28;
 import "forge-std/Script.sol";
 import "../src/LaunchpadFactory.sol";
 import "../src/Launchpad.sol";
-import "../src/token/TokenDeployer.sol";
 
 contract LaunchpadDeployerScript is Script {
     address constant WETH_ADDRESS = 0x131bfbd0607968B5a730CeCeCB0488D5D2EcA7ba;
@@ -15,10 +14,8 @@ contract LaunchpadDeployerScript is Script {
 
         vm.startBroadcast(privateKey);
 
-        TokenDeployer deployer = new TokenDeployer();
         Launchpad launchpad = new Launchpad();
-        LaunchpadFactory factory =
-            new LaunchpadFactory(address(launchpad), WETH_ADDRESS, UNISWAP_ROUTER_ADDRESS, address(deployer));
+        LaunchpadFactory factory = new LaunchpadFactory(address(launchpad), WETH_ADDRESS, UNISWAP_ROUTER_ADDRESS);
 
         console.log("LaunchpadFactory deployed at:", address(factory));
 

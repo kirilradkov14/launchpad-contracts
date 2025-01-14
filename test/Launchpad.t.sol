@@ -2,7 +2,6 @@
 pragma solidity ^0.8.28;
 
 import "forge-std/Test.sol";
-import "../src/token/TokenDeployer.sol";
 import "../src/Launchpad.sol";
 import "../src/LaunchpadFactory.sol";
 import "../helpers/ArtifactStorage.sol";
@@ -12,7 +11,6 @@ contract LaunchpadTest is Test, ArtifactStorage {
     address public uniswapFactory;
     address public uniswapRouter;
 
-    TokenDeployer public tokenDeployer;
     Launchpad public implementation;
     LaunchpadFactory public launchpadFactory;
 
@@ -37,16 +35,12 @@ contract LaunchpadTest is Test, ArtifactStorage {
         uniswapRouter = _deployBytecode(routerBytecodeWithArgs);
         require(uniswapRouter != address(0), "Uniswap Router deployment failed");
 
-        // TokenDeployer deployment
-        tokenDeployer = new TokenDeployer();
-        require(address(tokenDeployer) != address(0), "TokenDeployer deployment failed");
-
         // Launchpad deployment (implementation)
         implementation = new Launchpad();
         require(address(implementation) != address(0), "Implementation deployment failed");
 
         // LaunchpadFactory deployment
-        launchpadFactory = new LaunchpadFactory(address(implementation), weth, uniswapRouter, address(tokenDeployer));
+        launchpadFactory = new LaunchpadFactory(address(implementation), weth, uniswapRouter);
         require(address(launchpadFactory) != address(0), "LaunchpadFactory deployment failed");
     }
 
