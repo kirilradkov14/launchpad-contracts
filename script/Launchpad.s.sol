@@ -4,9 +4,11 @@ pragma solidity ^0.8.28;
 import "forge-std/Script.sol";
 import "../src/Launchpad.sol";
 
-contract TokenDeployerScript is Script {
+contract LaunchpadScript is Script {
     function run() external {
-        vm.startBroadcast();
+        uint256 privateKey = vm.envUint("PRIVATE_KEY_1");
+
+        vm.startBroadcast(privateKey);
 
         Launchpad launchpad = new Launchpad();
 

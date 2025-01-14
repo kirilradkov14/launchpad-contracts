@@ -3,7 +3,7 @@ pragma solidity 0.8.28;
 
 import "forge-std/Test.sol";
 
-import "./helpers/ArtifactStorage.sol";
+import "../helpers/ArtifactStorage.sol";
 
 interface IWETH9 {
     function totalSupply() external view returns (uint256);
