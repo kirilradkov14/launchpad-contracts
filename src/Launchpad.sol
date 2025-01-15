@@ -22,20 +22,17 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
 
     // --- Constants ---
     uint256 public constant THRESHOLD = 100 ether;
-    uint256 public constant TOTAL_TOKENS = 1_000_000_000 ether;
-    uint256 public constant TOKENS_FOR_SALE = 800_000_000 ether;
-    uint256 public constant TOKENS_FOR_LIQUIDITY = 200_000_000 ether;
 
     // --- State variables ---
+    uint256 public tokensLiquidity;
     uint256 public tokenSupply;
     uint256 public ethSupply;
 
-    address public tokenAddress;
+    bool public isMigrated;
 
+    IERC20 public token;
     IWETH public weth;
     IUniswapV2Router02 public uniswapRouter;
-
-    bool public isMigrated;
 
     // --- Errors ---
     error LaunchpadInvalidState();
@@ -70,13 +67,18 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
      * @param _uniswapRouter The address of the Uniswap V2 router.
      */
     function initialize(address _tokenAddress, address _wethAddress, address _uniswapRouter) external initializer {
+        if (_tokenAddress == address(0)) revert LaunchpadInvalidAddress();
+        if (_wethAddress == address(0)) revert LaunchpadInvalidAddress();
+        if (_uniswapRouter == address(0)) revert LaunchpadInvalidAddress();
+
         isMigrated = false;
-        tokenAddress = _tokenAddress;
+        token = IERC20(_tokenAddress);
         uniswapRouter = IUniswapV2Router02(_uniswapRouter);
         weth = IWETH(_wethAddress);
-        tokenSupply = TOKENS_FOR_SALE;
+        tokenSupply = token.balanceOf(address(this));
+        tokensLiquidity = tokenSupply * 2000 / 10_000;
 
-        IERC20(tokenAddress).approve(_uniswapRouter, type(uint256).max);
+        token.approve(_uniswapRouter, tokensLiquidity);
     }
 
     /**
@@ -109,7 +111,7 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
         tokenSupply -= amountOut;
 
         weth.deposit{value: ethAmount}();
-        IERC20(tokenAddress).safeTransfer(msg.sender, amountOut);
+        token.safeTransfer(msg.sender, amountOut);
 
         emit TokenPurchase(msg.sender, ethAmount, amountOut);
 
@@ -137,7 +139,7 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
         ethSupply -= ethReturn;
         tokenSupply += amountIn;
 
-        IERC20(tokenAddress).safeTransferFrom(msg.sender, address(this), amountIn);
+        token.safeTransferFrom(msg.sender, address(this), amountIn);
 
         weth.withdraw(ethReturn);
         payable(msg.sender).sendValue(ethReturn);
@@ -167,7 +169,7 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
 
     /**
      * @dev Fill order when contribution exceeds the threshold.
-     *      Refunds any excess ETH above THRESHOLD back to the sender.
+     *      Refunds any excess ETH above `THRESHOLD` back to the sender.
      */
     function _fillOrder(uint256 amountIn, uint256 totalSupply) internal returns (uint256 amountOut) {
         uint256 excess = totalSupply - THRESHOLD;
@@ -182,7 +184,7 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
             weth.deposit{value: contribution}();
         }
 
-        _migrateLiquidity(THRESHOLD, TOKENS_FOR_LIQUIDITY);
+        _migrateLiquidity(THRESHOLD, tokensLiquidity);
         emit TokenPurchase(msg.sender, contribution, amountOut);
         return amountOut;
     }
@@ -198,7 +200,7 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
         weth.withdraw(ethAmount);
 
         uniswapRouter.addLiquidityETH{value: ethAmount}(
-            tokenAddress,
+            address(token),
             tokenAmount,
             0, // Min tokens
             0, // Min ETH
@@ -206,7 +208,7 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
             block.timestamp + 600
         );
 
-        address tokenPairLP = IUniswapV2Factory(uniswapRouter.factory()).getPair(tokenAddress, uniswapRouter.WETH());
+        address tokenPairLP = IUniswapV2Factory(uniswapRouter.factory()).getPair(address(token), uniswapRouter.WETH());
         if (tokenPairLP == address(0)) revert LaunchpadInvalidAddress();
 
         IERC20(tokenPairLP).safeTransfer(address(0xdead), IERC20(tokenPairLP).balanceOf(address(this)));

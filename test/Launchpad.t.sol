@@ -64,9 +64,9 @@ contract LaunchpadTest is Test, ArtifactStorage {
         uint256 proxyEthSupply = proxy.ethSupply();
         assertEq(proxyEthSupply, ethAmount, "ETH supply mismatch after token purchase");
 
-        require(IERC20(proxy.tokenAddress()).approve(address(proxy), type(uint256).max), "Approval failed");
+        require(proxy.token().approve(address(proxy), type(uint256).max), "Approval failed");
 
-        uint256 userTokenBalance = IERC20(proxy.tokenAddress()).balanceOf(address(this));
+        uint256 userTokenBalance = proxy.token().balanceOf(address(this));
         assertEq(userTokenBalance, tokensBought, "User token balance mismatch after token purchase");
 
         uint256 tokensToSell = tokensBought / 2; // Sell half of the tokens
@@ -78,7 +78,7 @@ contract LaunchpadTest is Test, ArtifactStorage {
         uint256 proxyEthSupplyAfterSale = proxy.ethSupply();
         assertEq(proxyEthSupplyAfterSale, ethAmount - ethReceived, "ETH supply mismatch after token sale");
 
-        uint256 userTokenBalanceAfterSale = IERC20(proxy.tokenAddress()).balanceOf(address(this));
+        uint256 userTokenBalanceAfterSale = proxy.token().balanceOf(address(this));
         assertEq(userTokenBalanceAfterSale, tokensBought - tokensToSell, "User token balance mismatch after token sale");
 
         uint256 userEthBalance = address(this).balance;
@@ -108,7 +108,7 @@ contract LaunchpadTest is Test, ArtifactStorage {
         assertTrue(proxy.isMigrated() == true, "LP already migrated");
         assertTrue(proxy.ethSupply() <= proxy.THRESHOLD(), "ETH Supply Reached Threshold");
 
-        address pair = IUniswapV2Factory(uniswapFactory).getPair(proxy.tokenAddress(), weth);
+        address pair = IUniswapV2Factory(uniswapFactory).getPair(address(proxy.token()), weth);
         assertTrue(pair != address(0), "Liquidity pair not created");
 
         uint256 pairBalance = IERC20(pair).balanceOf(address(0xdead));
