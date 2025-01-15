@@ -4,12 +4,14 @@ pragma solidity ^0.8.28;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
-import {ITokenDeployer} from "./interfaces/ITokenDeployer.sol";
+import {Token} from "./token/Token.sol";
 import {ILaunchpadFactory} from "./interfaces//launchpad/ILaunchpadFactory.sol";
 import {ILaunchpad} from "./interfaces/launchpad/ILaunchpad.sol";
 
 contract LaunchpadFactory is Ownable(msg.sender), Pausable, ILaunchpadFactory {
     using Address for address;
+
+    uint256 public constant TOTAL_SUPPLY = 1_000_000_000 ether;
 
     address public immutable implementation;
     address public immutable wethAddress;
@@ -21,23 +23,20 @@ contract LaunchpadFactory is Ownable(msg.sender), Pausable, ILaunchpadFactory {
     error LaunchpadFactoryInvalidImplementation();
     error LaunchpadFactoryInvalidWETH();
     error LaunchpadFactoryInvalidRouter();
-    error LaunchpadFactoryInvalidTokenDeployer();
     error LaunchpadFactoryInitializationFailed();
-    error LaunchpadFactoryInvalidToken();
     error LaunchpadFactoryDeployFailed();
+    error LaunchpadFactoryTokenDeploymentFailed();
 
     event LaunchpadCreation(address indexed launchpad, address indexed token);
 
-    constructor(address _implementation, address _weth, address _uniswapV2Router, address _tokenDeployer) {
+    constructor(address _implementation, address _weth, address _uniswapV2Router) {
         if (_implementation == address(0)) revert LaunchpadFactoryInvalidImplementation();
         if (_weth == address(0)) revert LaunchpadFactoryInvalidWETH();
         if (_uniswapV2Router == address(0)) revert LaunchpadFactoryInvalidRouter();
-        if (_tokenDeployer == address(0)) revert LaunchpadFactoryInvalidTokenDeployer();
 
         implementation = _implementation;
         wethAddress = _weth;
         uniswapV2Router = _uniswapV2Router;
-        tokenDeployer = _tokenDeployer;
     }
 
     /**
@@ -67,9 +66,7 @@ contract LaunchpadFactory is Ownable(msg.sender), Pausable, ILaunchpadFactory {
 
         if (launchpad == address(0)) revert LaunchpadFactoryDeployFailed();
 
-        address token = ITokenDeployer(tokenDeployer).deployTokenWithCreate2(launchpad, salt, _name, _symbol);
-
-        if (token == address(0)) revert LaunchpadFactoryInvalidToken();
+        address token = _deployToken(launchpad, _name, _symbol);
 
         bytes memory data = abi.encodeCall(ILaunchpad.initialize, (token, wethAddress, uniswapV2Router));
         (bool success,) = launchpad.call(data);
@@ -100,5 +97,22 @@ contract LaunchpadFactory is Ownable(msg.sender), Pausable, ILaunchpadFactory {
      */
     function unpause() external onlyOwner {
         _unpause();
+    }
+
+    /**
+     * @dev Deploy ERC20 token using create
+     * @param _beneficiary The address that will receive the initial supply.
+     * @param _name The name of the token.
+     * @param _symbol The symbol of the token.
+     * @return token The address of the deployed token.
+     */
+    function _deployToken(address _beneficiary, string memory _name, string memory _symbol)
+        internal
+        whenNotPaused
+        returns (address token)
+    {
+        Token tokenInstance = new Token(TOTAL_SUPPLY, _beneficiary, _name, _symbol);
+        token = address(tokenInstance);
+        if (token == address(0)) revert LaunchpadFactoryTokenDeploymentFailed();
     }
 }

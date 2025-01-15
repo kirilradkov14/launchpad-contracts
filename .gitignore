@@ -14,4 +14,8 @@ docs/
 # Dotenv file
 .env
 
-node_modules
+# Node modules
+node_modules/
+
+# etc
+.vscode/
