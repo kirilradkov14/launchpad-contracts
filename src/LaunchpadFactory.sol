@@ -111,8 +111,7 @@ contract LaunchpadFactory is Ownable(msg.sender), Pausable, ILaunchpadFactory {
         whenNotPaused
         returns (address token)
     {
-        Token tokenInstance = new Token(TOTAL_SUPPLY, _beneficiary, _name, _symbol);
-        token = address(tokenInstance);
+        token = address(new Token(TOTAL_SUPPLY, _beneficiary, _name, _symbol));
         if (token == address(0)) revert LaunchpadFactoryTokenDeploymentFailed();
     }
 }
