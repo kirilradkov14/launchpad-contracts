@@ -72,11 +72,14 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
         if (_uniswapRouter == address(0)) revert LaunchpadInvalidAddress();
 
         isMigrated = false;
+
         token = IERC20(_tokenAddress);
         uniswapRouter = IUniswapV2Router02(_uniswapRouter);
         weth = IWETH(_wethAddress);
+
         tokenSupply = token.balanceOf(address(this));
         tokensLiquidity = tokenSupply * 2000 / 10_000;
+        tokenSupply -= tokensLiquidity;
 
         token.approve(_uniswapRouter, tokensLiquidity);
     }
