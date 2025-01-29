@@ -4,10 +4,10 @@ pragma solidity ^0.8.28;
 import "./Math64x64.sol";
 
 /**
- * @title Formula
+ * @title BondingCurve
  * @dev Implements an exponential bonding curve for token pricing using the Math64x64 library.
  */
-library Formula {
+library BondingCurve {
     using Math64x64 for int128;
 
     /**
