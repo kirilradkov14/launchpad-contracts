@@ -5,7 +5,7 @@ import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.s
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {ReentrancyGuardTransient} from "@openzeppelin/contracts/utils/ReentrancyGuardTransient.sol";
-import {Formula} from "./libraries/Formula.sol";
+import {BondingCurve} from "./libraries/BondingCurve.sol";
 import {ILaunchpad} from "./interfaces/launchpad/ILaunchpad.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IWETH} from "./interfaces/IWETH.sol";
@@ -106,7 +106,7 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
             return amountOut;
         }
 
-        amountOut = Formula.calculatePurchaseReturn(ethSupply, ethAmount);
+        amountOut = BondingCurve.calculatePurchaseReturn(ethSupply, ethAmount);
         if (amountOut > tokenSupply) revert LaunchpadInsufficientLiquidity();
         if (amountOut < amountOutMin) revert LaunchpadInsufficientOutputAmount();
 
@@ -135,7 +135,7 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
     {
         if (amountIn == 0) revert LaunchpadInsufficientInputAmount();
 
-        uint256 ethReturn = Formula.calculateSellReturn(ethSupply, amountIn);
+        uint256 ethReturn = BondingCurve.calculateSellReturn(ethSupply, amountIn);
         if (ethReturn < amountOutMin) revert LaunchpadInsufficientOutputAmount();
         if (ethReturn > ethSupply) revert LaunchpadInsufficientLiquidity();
 
@@ -158,7 +158,7 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
      * @return amountOut The amount of ETH that would be received.
      */
     function getEthersOutAtCurrentSupply(uint256 amountIn) public view returns (uint256 amountOut) {
-        amountOut = Formula.calculateSellReturn(ethSupply, amountIn);
+        amountOut = BondingCurve.calculateSellReturn(ethSupply, amountIn);
     }
 
     /**
@@ -167,7 +167,7 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
      * @return amountOut The amount of tokens that would be received.
      */
     function getTokensOutAtCurrentSupply(uint256 amountIn) public view returns (uint256 amountOut) {
-        amountOut = Formula.calculatePurchaseReturn(ethSupply, amountIn);
+        amountOut = BondingCurve.calculatePurchaseReturn(ethSupply, amountIn);
     }
 
     /**
@@ -180,7 +180,7 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
 
         if (excess > 0) {
             payable(msg.sender).sendValue(excess);
-            amountOut = Formula.calculatePurchaseReturn(ethSupply, contribution);
+            amountOut = BondingCurve.calculatePurchaseReturn(ethSupply, contribution);
             if (amountOut > tokenSupply) revert LaunchpadInsufficientLiquidity();
             ethSupply += contribution;
             tokenSupply -= amountOut;

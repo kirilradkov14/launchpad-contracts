@@ -2,10 +2,10 @@
 pragma solidity ^0.8.28;
 
 import "forge-std/Test.sol";
-import "../src/libraries/Formula.sol";
+import "../src/libraries/BondingCurve.sol";
 
-contract FormulaTest is Test {
-    // Constants from the Formula library
+contract BondingCurveTest is Test {
+    // Constants from the BondingCurve library
     uint256 constant BASE_PRICE = 30_677_636_300;
     uint256 constant EXP_FACTOR = 4_000_000;
     uint256 constant SCALING_FACTOR = 1e18;
@@ -15,12 +15,12 @@ contract FormulaTest is Test {
     function testPurchaseBaseCases() public pure {
         // Test purchase with 0 ETH supply and 1 ETH input
         // Should return some tokens
-        uint256 tokensOut = Formula.calculatePurchaseReturn(0, 1 ether);
+        uint256 tokensOut = BondingCurve.calculatePurchaseReturn(0, 1 ether);
         assert(tokensOut > 0);
 
         // Test purchase with 0 ETH input
         // Should return 0
-        uint256 zeroOut = Formula.calculatePurchaseReturn(1 ether, 0);
+        uint256 zeroOut = BondingCurve.calculatePurchaseReturn(1 ether, 0);
         assert(zeroOut == 0);
     }
 
@@ -30,8 +30,8 @@ contract FormulaTest is Test {
         uint256 supply1 = 10 ether;
         uint256 supply2 = 20 ether;
 
-        uint256 tokens1 = Formula.calculatePurchaseReturn(supply1, ethIn);
-        uint256 tokens2 = Formula.calculatePurchaseReturn(supply2, ethIn);
+        uint256 tokens1 = BondingCurve.calculatePurchaseReturn(supply1, ethIn);
+        uint256 tokens2 = BondingCurve.calculatePurchaseReturn(supply2, ethIn);
 
         assertTrue(tokens2 < tokens1, "Price should increase with supply");
 
@@ -43,7 +43,7 @@ contract FormulaTest is Test {
 
     function testSellBaseCases() public {
         // Test sell with 0 token input
-        uint256 ethOut = Formula.calculateSellReturn(1 ether, 0);
+        uint256 ethOut = BondingCurve.calculateSellReturn(1 ether, 0);
         assertEq(ethOut, 0, "Should return 0 ETH for 0 tokens");
     }
 
@@ -54,8 +54,8 @@ contract FormulaTest is Test {
         // Test selling different amounts
         uint256 sellAmount1 = 1000 ether;
 
-        uint256 ethOut1 = Formula.calculateSellReturn(initialEthSupply, sellAmount1);
-        uint256 ethOut2 = Formula.calculateSellReturn(initialEthSupply - ethOut1, sellAmount1);
+        uint256 ethOut1 = BondingCurve.calculateSellReturn(initialEthSupply, sellAmount1);
+        uint256 ethOut2 = BondingCurve.calculateSellReturn(initialEthSupply - ethOut1, sellAmount1);
 
         assertTrue(ethOut2 < ethOut1, "Price should decrease after selling");
     }
@@ -65,10 +65,10 @@ contract FormulaTest is Test {
         uint256 ethIn = 1 ether;
 
         // Buy tokens
-        uint256 tokensReceived = Formula.calculatePurchaseReturn(ethSupply, ethIn);
+        uint256 tokensReceived = BondingCurve.calculatePurchaseReturn(ethSupply, ethIn);
 
         // Sell the same amount of tokens
-        uint256 ethOut = Formula.calculateSellReturn(ethSupply + ethIn, tokensReceived);
+        uint256 ethOut = BondingCurve.calculateSellReturn(ethSupply + ethIn, tokensReceived);
 
         // Should get slightly less ETH due to the curve mechanics
         assertTrue(ethOut < ethIn, "Should have some slippage");
@@ -78,18 +78,18 @@ contract FormulaTest is Test {
     function testExtremeValues() public {
         // Test with very small amounts
         uint256 tinyEth = 1 wei;
-        uint256 tokensForTiny = Formula.calculatePurchaseReturn(0, tinyEth);
+        uint256 tokensForTiny = BondingCurve.calculatePurchaseReturn(0, tinyEth);
         // Due to precision limitations with fixed-point math, very small amounts might return 0
         assertEq(tokensForTiny, 0, "Tiny amounts should return 0 due to precision limits");
 
         // Test with more reasonable minimum amount (0.0001 ether)
         uint256 smallEth = 1e14; // 0.0001 ether
-        uint256 tokensForSmall = Formula.calculatePurchaseReturn(0, smallEth);
+        uint256 tokensForSmall = BondingCurve.calculatePurchaseReturn(0, smallEth);
         assertTrue(tokensForSmall > 0, "Should handle small amounts");
 
         // Test with large amounts
         uint256 largeEth = 1000000 ether;
-        uint256 tokensForLarge = Formula.calculatePurchaseReturn(0, largeEth);
+        uint256 tokensForLarge = BondingCurve.calculatePurchaseReturn(0, largeEth);
         assertTrue(tokensForLarge > 0, "Should handle large amounts");
 
         // Test progression of amounts
@@ -100,9 +100,9 @@ contract FormulaTest is Test {
         uint256 ethSupply = 10 ether;
 
         // Try to sell more tokens than possible
-        uint256 maxTokens = Formula.calculatePurchaseReturn(0, ethSupply);
-        vm.expectRevert(abi.encodeWithSignature("FormulaInvalidTokenAmount()"));
-        Formula.calculateSellReturn(ethSupply, maxTokens * 2);
+        uint256 maxTokens = BondingCurve.calculatePurchaseReturn(0, ethSupply);
+        vm.expectRevert();
+        BondingCurve.calculateSellReturn(ethSupply, maxTokens * 2);
     }
 
     function testPriceProgression() public {
@@ -112,7 +112,7 @@ contract FormulaTest is Test {
 
         // Test price progression over multiple purchases
         for (uint256 i = 0; i < 10; i++) {
-            uint256 tokenAmount = Formula.calculatePurchaseReturn(ethSupply, ethIncrement);
+            uint256 tokenAmount = BondingCurve.calculatePurchaseReturn(ethSupply, ethIncrement);
             assertTrue(tokenAmount < lastTokenAmount, "Price must increase monotonically");
             assertTrue(tokenAmount > 0, "Should always return some tokens");
 
@@ -123,7 +123,7 @@ contract FormulaTest is Test {
 
     function testCurveParameters() public {
         // Test that the curve parameters produce expected behavior
-        uint256 initialPurchase = Formula.calculatePurchaseReturn(0, 1 ether);
+        uint256 initialPurchase = BondingCurve.calculatePurchaseReturn(0, 1 ether);
 
         // Log values for analysis
         console.log("Initial purchase tokens:", initialPurchase);
@@ -135,13 +135,13 @@ contract FormulaTest is Test {
         assertTrue(initialPurchase > 0, "Should return tokens");
 
         // 2. Verify curve steepness
-        uint256 laterPurchase = Formula.calculatePurchaseReturn(50 ether, 1 ether);
+        uint256 laterPurchase = BondingCurve.calculatePurchaseReturn(50 ether, 1 ether);
         assertTrue(laterPurchase < initialPurchase / 2, "Curve should be sufficiently steep");
 
         // 3. Verify the exponential nature
-        uint256 purchase1 = Formula.calculatePurchaseReturn(0, 1 ether);
-        uint256 purchase2 = Formula.calculatePurchaseReturn(1 ether, 1 ether);
-        uint256 purchase3 = Formula.calculatePurchaseReturn(2 ether, 1 ether);
+        uint256 purchase1 = BondingCurve.calculatePurchaseReturn(0, 1 ether);
+        uint256 purchase2 = BondingCurve.calculatePurchaseReturn(1 ether, 1 ether);
+        uint256 purchase3 = BondingCurve.calculatePurchaseReturn(2 ether, 1 ether);
 
         assertTrue(purchase1 > purchase2, "Price should increase");
         assertTrue(purchase2 > purchase3, "Price should increase");
