@@ -27,7 +27,6 @@
 ### 📈 Exponential Bonding Curve
 - **Instant Liquidity**: No pre-locking required - liquidity forms as users buy
 - **Fair Price Discovery**: Algorithmic price adjustment based on market activity
-- **Anti-Dump Protection**: Progressive sell penalties protect early adopters
 
 ### 🔄 Automated Liquidity Migration
 - **Seamless Uniswap Transition**: Migrates liquidity to Uniswap V2 at threshold
@@ -42,7 +41,7 @@ graph TD;
     A[Factory Contract] -->|Deploys| B[Proxy Contract];
     B -->|References| C[Logic Contract];
     C -->|Interacts With| D[Bonding Curve];
-    D -->|Feeds Data To| E[Uniswap Migrator];
+    D -->|Migrates LP| E[UniswapV2Router];
 
 ```
 
@@ -58,7 +57,7 @@ S: Current ETH supply (contract balance)
 
 E: ETH amount sent
 
-k: Curve steepness parameter (configurable)
+k: Curve steepness parameter
 
 P₀: Initial price per token
 
@@ -85,7 +84,7 @@ T_in: Tokens being sold
 ### Installation
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/launchpad-contracts.git
+git clone https://github.com/kirilradkov14/launchpad-contracts.git
 cd launchpad-contracts
 
 # Install dependencies
@@ -125,7 +124,7 @@ forge test --match-contract LaunchpadTests
 
 ### Testnet
 ```bash
-./deploy.sh goerli
+./deploy.sh holesky
 ```
 
 ### Local Development
@@ -133,8 +132,8 @@ forge test --match-contract LaunchpadTests
 # Start local node
 anvil
 
-# In separate terminal
-./deploy.sh local
+# In anvil terminal
+forge script script/LaunchpadFactory.s.sol:LaunchpadDeployerScript --rpc-url http://localhost:8545 --broadcast
 ```
 
 ## 📊 Test Coverage
