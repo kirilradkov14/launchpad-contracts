@@ -101,7 +101,7 @@ contract BondingCurveTest is Test {
 
         // Try to sell more tokens than possible
         uint256 maxTokens = BondingCurve.calculatePurchaseReturn(0, ethSupply);
-        vm.expectRevert();
+        vm.expectRevert(BondingCurve.FormulaInvalidTokenAmount.selector);
         BondingCurve.calculateSellReturn(ethSupply, maxTokens * 2);
     }
 
