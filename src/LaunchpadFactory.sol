@@ -48,7 +48,6 @@ contract LaunchpadFactory is Ownable(msg.sender), Pausable, ILaunchpadFactory {
      */
     function createLaunchpad(string memory _name, string memory _symbol)
         external
-        payable
         whenNotPaused
         returns (address launchpad)
     {

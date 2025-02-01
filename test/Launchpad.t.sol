@@ -48,7 +48,7 @@ contract LaunchpadTest is Test, ArtifactStorage {
         string memory tokenName = "Test Token";
         string memory tokenSymbol = "TTKN";
 
-        address launchpad = launchpadFactory.createLaunchpad{value: 1 ether}(tokenName, tokenSymbol);
+        address launchpad = launchpadFactory.createLaunchpad(tokenName, tokenSymbol);
 
         assertTrue(launchpad != address(0), "Launchpad creation failed");
 
@@ -89,7 +89,7 @@ contract LaunchpadTest is Test, ArtifactStorage {
         string memory tokenName = "Test Token";
         string memory tokenSymbol = "TTKN";
 
-        address launchpad = launchpadFactory.createLaunchpad{value: 1 ether}(tokenName, tokenSymbol);
+        address launchpad = launchpadFactory.createLaunchpad(tokenName, tokenSymbol);
 
         assertTrue(launchpad != address(0), "Launchpad creation failed");
 

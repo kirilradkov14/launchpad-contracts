@@ -44,7 +44,7 @@ contract LaunchpadFuzzTest is Test, ArtifactStorage {
         require(address(launchpadFactory) != address(0), "LaunchpadFactory deployment failed");
 
         // Create a proxy instance for testing
-        address launchpad = launchpadFactory.createLaunchpad{value: 1 ether}("Test Token", "TTKN");
+        address launchpad = launchpadFactory.createLaunchpad("Test Token", "TTKN");
         proxy = Launchpad(payable(launchpad));
     }
 

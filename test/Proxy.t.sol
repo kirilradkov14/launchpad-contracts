@@ -170,12 +170,14 @@ contract ProxyTest is Test, ArtifactStorage {
         vm.stopPrank();
     }
 
-    function testFailBuyAfterMigration() public {
-        // First reach threshold
+    function test_CannotBuyAfterMigration() public {
+        // First reach threshold and verify migration
         vm.startPrank(alice);
-        proxy.buyTokens{value: proxy.THRESHOLD()}(0);
+        uint256 exceedingAmount = proxy.THRESHOLD() + 1 ether;
+        proxy.buyTokens{value: exceedingAmount}(0);
+        assertTrue(proxy.isMigrated(), "Should be migrated after threshold");
 
-        // Try to buy after migration
+        // Should revert when trying to buy after migration
         vm.expectRevert(abi.encodeWithSignature("LaunchpadInvalidState()"));
         proxy.buyTokens{value: 1 ether}(0);
         vm.stopPrank();
@@ -192,7 +194,7 @@ contract ProxyTest is Test, ArtifactStorage {
         vm.stopPrank();
     }
 
-    function testFailSellMinimumOutputTooHigh() public {
+    function test_CannotBuyWithHighMinimumOutput() public {
         uint256 buyAmount = 1 ether;
         uint256 expectedTokens = proxy.getTokensOutAtCurrentSupply(buyAmount);
 
@@ -203,6 +205,7 @@ contract ProxyTest is Test, ArtifactStorage {
 
         // Try to buy with minimum output higher than possible
         vm.startPrank(alice);
+        vm.expectRevert(abi.encodeWithSignature("LaunchpadInsufficientOutputAmount()"));
         proxy.buyTokens{value: buyAmount}(expectedTokens + 1);
         vm.stopPrank();
 
