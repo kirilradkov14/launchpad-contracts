@@ -202,13 +202,10 @@ contract Launchpad is Initializable, ReentrancyGuardTransient, ILaunchpad {
 
         weth.withdraw(ethAmount);
 
+        uint256 minTokenAmount = tokenAmount * 95 / 100;
+        uint256 minEthAmount = ethAmount * 95 / 100;
         uniswapRouter.addLiquidityETH{value: ethAmount}(
-            address(token),
-            tokenAmount,
-            0, // Min tokens
-            0, // Min ETH
-            address(this),
-            block.timestamp + 600
+            address(token), tokenAmount, minTokenAmount, minEthAmount, address(this), block.timestamp
         );
 
         address tokenPairLP = IUniswapV2Factory(uniswapRouter.factory()).getPair(address(token), uniswapRouter.WETH());
