@@ -101,8 +101,23 @@ contract BondingCurveTest is Test {
 
         // Try to sell more tokens than possible
         uint256 maxTokens = BondingCurve.calculatePurchaseReturn(0, ethSupply);
-        vm.expectRevert(BondingCurve.FormulaInvalidTokenAmount.selector);
-        BondingCurve.calculateSellReturn(ethSupply, maxTokens * 2);
+        try this.callCalculateSellReturn(ethSupply, maxTokens * 2) {
+            fail();
+        } catch Error(string memory) {
+            fail();
+        } catch (bytes memory returnData) {
+            bytes4 expectedSelector = BondingCurve.FormulaInvalidTokenAmount.selector;
+            bytes4 actualSelector;
+            assembly {
+                actualSelector := mload(add(returnData, 0x20))
+            }
+            assertEq(actualSelector, expectedSelector, "Wrong error selector");
+        }
+    }
+
+    // Helper function to call the library function externally
+    function callCalculateSellReturn(uint256 ethSupply, uint256 tokenAmount) external pure returns (uint256) {
+        return BondingCurve.calculateSellReturn(ethSupply, tokenAmount);
     }
 
     function test_PriceProgression() public {
