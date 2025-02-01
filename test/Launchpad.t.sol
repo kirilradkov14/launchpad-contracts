@@ -44,11 +44,11 @@ contract LaunchpadTest is Test, ArtifactStorage {
         require(address(launchpadFactory) != address(0), "LaunchpadFactory deployment failed");
     }
 
-    function testProxyCreation() public {
+    function test_ProxyCreation() public {
         string memory tokenName = "Test Token";
         string memory tokenSymbol = "TTKN";
 
-        address launchpad = launchpadFactory.createLaunchpad{value: 1 ether}(tokenName, tokenSymbol);
+        address launchpad = launchpadFactory.createLaunchpad(tokenName, tokenSymbol);
 
         assertTrue(launchpad != address(0), "Launchpad creation failed");
 
@@ -85,11 +85,11 @@ contract LaunchpadTest is Test, ArtifactStorage {
         assertTrue(userEthBalance >= ethReceived, "User ETH balance mismatch after token sale");
     }
 
-    function testLiquidityMigration() public {
+    function test_LiquidityMigration() public {
         string memory tokenName = "Test Token";
         string memory tokenSymbol = "TTKN";
 
-        address launchpad = launchpadFactory.createLaunchpad{value: 1 ether}(tokenName, tokenSymbol);
+        address launchpad = launchpadFactory.createLaunchpad(tokenName, tokenSymbol);
 
         assertTrue(launchpad != address(0), "Launchpad creation failed");
 

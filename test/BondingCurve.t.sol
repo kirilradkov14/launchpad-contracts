@@ -12,7 +12,7 @@ contract BondingCurveTest is Test {
 
     function setUp() public {}
 
-    function testPurchaseBaseCases() public pure {
+    function test_PurchaseBaseCases() public pure {
         // Test purchase with 0 ETH supply and 1 ETH input
         // Should return some tokens
         uint256 tokensOut = BondingCurve.calculatePurchaseReturn(0, 1 ether);
@@ -24,7 +24,7 @@ contract BondingCurveTest is Test {
         assert(zeroOut == 0);
     }
 
-    function testPurchasePriceIncrease() public {
+    function test_PurchasePriceIncrease() public {
         // Test that token price increases with ETH supply
         uint256 ethIn = 1 ether;
         uint256 supply1 = 10 ether;
@@ -41,13 +41,13 @@ contract BondingCurveTest is Test {
         assertTrue(priceDiff > 0 && priceDiff < 50, "Price increase should be reasonable");
     }
 
-    function testSellBaseCases() public {
+    function test_SellBaseCases() public {
         // Test sell with 0 token input
         uint256 ethOut = BondingCurve.calculateSellReturn(1 ether, 0);
         assertEq(ethOut, 0, "Should return 0 ETH for 0 tokens");
     }
 
-    function testSellPriceDecrease() public {
+    function test_SellPriceDecrease() public {
         // Setup initial state
         uint256 initialEthSupply = 50 ether;
 
@@ -60,7 +60,7 @@ contract BondingCurveTest is Test {
         assertTrue(ethOut2 < ethOut1, "Price should decrease after selling");
     }
 
-    function testCurveSymmetry() public {
+    function test_CurveSymmetry() public {
         uint256 ethSupply = 10 ether;
         uint256 ethIn = 1 ether;
 
@@ -75,7 +75,7 @@ contract BondingCurveTest is Test {
         assertTrue(ethOut > ethIn * 99 / 100, "Slippage should be reasonable");
     }
 
-    function testExtremeValues() public {
+    function test_ExtremeValues() public {
         // Test with very small amounts
         uint256 tinyEth = 1 wei;
         uint256 tokensForTiny = BondingCurve.calculatePurchaseReturn(0, tinyEth);
@@ -96,16 +96,31 @@ contract BondingCurveTest is Test {
         assertTrue(tokensForSmall < tokensForLarge, "Larger ETH input should yield more tokens");
     }
 
-    function testSellRevertOnInvalidAmount() public {
+    function test_CannotSellOnInvalidAmount() public {
         uint256 ethSupply = 10 ether;
 
         // Try to sell more tokens than possible
         uint256 maxTokens = BondingCurve.calculatePurchaseReturn(0, ethSupply);
-        vm.expectRevert();
-        BondingCurve.calculateSellReturn(ethSupply, maxTokens * 2);
+        try this.callCalculateSellReturn(ethSupply, maxTokens * 2) {
+            fail();
+        } catch Error(string memory) {
+            fail();
+        } catch (bytes memory returnData) {
+            bytes4 expectedSelector = BondingCurve.FormulaInvalidTokenAmount.selector;
+            bytes4 actualSelector;
+            assembly {
+                actualSelector := mload(add(returnData, 0x20))
+            }
+            assertEq(actualSelector, expectedSelector, "Wrong error selector");
+        }
     }
 
-    function testPriceProgression() public {
+    // Helper function to call the library function externally
+    function callCalculateSellReturn(uint256 ethSupply, uint256 tokenAmount) external pure returns (uint256) {
+        return BondingCurve.calculateSellReturn(ethSupply, tokenAmount);
+    }
+
+    function test_PriceProgression() public {
         uint256 ethSupply = 0;
         uint256 ethIncrement = 1 ether;
         uint256 lastTokenAmount = type(uint256).max;
@@ -121,7 +136,7 @@ contract BondingCurveTest is Test {
         }
     }
 
-    function testCurveParameters() public {
+    function test_CurveParameters() public {
         // Test that the curve parameters produce expected behavior
         uint256 initialPurchase = BondingCurve.calculatePurchaseReturn(0, 1 ether);
 

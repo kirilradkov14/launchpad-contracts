@@ -1,6 +1,6 @@
-# 🚀 EVM Launchpad - Gas Efficient Token Launchpad Smart Contract
+# 🚀 EVM Launchpad Contract - Gas Efficient Token Launchpad Smart Contract
 
-**EVM-compatible Launchpad System** inspired by [pump.fun](https://pump.fun) featuring **zero-liquidity launches** and **automated price discovery** through an exponential bonding curve. Designed for secure, transparent, and efficient token distribution.
+**EVM-compatible Launchpad System** inspired by **pump.fun** featuring **zero-liquidity launches** and **automated price discovery** through an exponential bonding curve. Designed for secure, transparent, and efficient token distribution.
 
 ![Solidity Version](https://img.shields.io/badge/Solidity-^0.8.28-informational)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
