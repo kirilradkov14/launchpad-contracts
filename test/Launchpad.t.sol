@@ -44,7 +44,7 @@ contract LaunchpadTest is Test, ArtifactStorage {
         require(address(launchpadFactory) != address(0), "LaunchpadFactory deployment failed");
     }
 
-    function testProxyCreation() public {
+    function test_ProxyCreation() public {
         string memory tokenName = "Test Token";
         string memory tokenSymbol = "TTKN";
 
@@ -85,7 +85,7 @@ contract LaunchpadTest is Test, ArtifactStorage {
         assertTrue(userEthBalance >= ethReceived, "User ETH balance mismatch after token sale");
     }
 
-    function testLiquidityMigration() public {
+    function test_LiquidityMigration() public {
         string memory tokenName = "Test Token";
         string memory tokenSymbol = "TTKN";
 

@@ -32,7 +32,7 @@ contract UniswapV2 is Test, ArtifactStorage {
 
     function setUp() public {}
 
-    function testWethDeployment() public {
+    function test_WethDeployment() public {
         weth = _deployBytecode(ArtifactStorage.wethBytecode);
 
         // Assert deployment succeeded
@@ -53,7 +53,7 @@ contract UniswapV2 is Test, ArtifactStorage {
         assertEq(newBalance, 0.5 ether, "Balance should be 0.5 Ether");
     }
 
-    function testFactoryDeployment() public {
+    function test_FactoryDeployment() public {
         address feeToSetter = vm.addr(1);
         bytes memory constructorArgs = abi.encode(feeToSetter);
         bytes memory bytecodeWithArgs = abi.encodePacked(ArtifactStorage.uniswapV2Factory, constructorArgs);
@@ -82,7 +82,7 @@ contract UniswapV2 is Test, ArtifactStorage {
         assertEq(pair, retrievedPair, "Retrieved pair address does not match created pair");
     }
 
-    function testRouterDeployment() public {
+    function test_RouterDeployment() public {
         // Deploy WETH
         weth = _deployBytecode(ArtifactStorage.wethBytecode);
         assertTrue(weth != address(0), "WETH deployment failed");

@@ -66,14 +66,14 @@ contract ProxyTest is Test, ArtifactStorage {
         vm.deal(bob, INITIAL_ETH_BALANCE);
     }
 
-    function testInitialState() public view {
+    function test_InitialState() public view {
         assertEq(proxy.ethSupply(), 0, "Initial ETH supply should be 0");
         assertEq(proxy.tokenSupply(), INITIAL_TOKEN_SUPPLY, "Initial token supply mismatch");
         assertEq(proxy.tokensLiquidity(), INITIAL_LIQUIDITY_TOKENS, "Initial liquidity tokens mismatch");
         assertFalse(proxy.isMigrated(), "Should not be migrated initially");
     }
 
-    function testSingleBuyTokens() public {
+    function test_SingleBuyTokens() public {
         uint256 buyAmount = 1 ether;
         uint256 initialTokenBalance = proxy.token().balanceOf(alice);
         uint256 initialEthSupply = proxy.ethSupply();
@@ -90,7 +90,7 @@ contract ProxyTest is Test, ArtifactStorage {
         assertEq(IERC20(address(proxy.weth())).balanceOf(address(proxy)), buyAmount, "WETH balance incorrect");
     }
 
-    function testMultipleBuysIncreasePrices() public {
+    function test_MultipleBuysIncreasePrices() public {
         uint256 buyAmount = 1 ether;
 
         // First buy
@@ -108,7 +108,7 @@ contract ProxyTest is Test, ArtifactStorage {
         assertTrue(secondBuyTokens < firstBuyTokens, "Price should increase after buys");
     }
 
-    function testSellTokens() public {
+    function test_SellTokens() public {
         // First buy tokens
         uint256 buyAmount = 1 ether;
         vm.startPrank(alice);
@@ -136,7 +136,7 @@ contract ProxyTest is Test, ArtifactStorage {
         assertEq(proxy.token().balanceOf(alice), 0, "Should have no tokens left");
     }
 
-    function testPriceDecreasesAfterSell() public {
+    function test_PriceDecreasesAfterSell() public {
         // Initial buy
         uint256 buyAmount = 2 ether;
         vm.startPrank(alice);
@@ -156,7 +156,7 @@ contract ProxyTest is Test, ArtifactStorage {
         assertTrue(priceAfterSell < priceBeforeSell, "Price should decrease after sell");
     }
 
-    function testThresholdMigration() public {
+    function test_ThresholdMigration() public {
         vm.startPrank(alice);
         uint256 thresholdAmount = proxy.THRESHOLD();
 
@@ -183,7 +183,7 @@ contract ProxyTest is Test, ArtifactStorage {
         vm.stopPrank();
     }
 
-    function testMinimumOutputAmount() public {
+    function test_MinimumOutputAmount() public {
         uint256 buyAmount = 1 ether;
         uint256 expectedTokens = proxy.getTokensOutAtCurrentSupply(buyAmount);
 
