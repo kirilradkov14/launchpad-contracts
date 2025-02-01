@@ -3,7 +3,7 @@ pragma solidity 0.8.28;
 
 import "forge-std/Test.sol";
 
-import "./helpers/ArtifactStorage.sol";
+import "../helpers/ArtifactStorage.sol";
 
 interface IWETH9 {
     function totalSupply() external view returns (uint256);
@@ -30,11 +30,9 @@ contract UniswapV2 is Test, ArtifactStorage {
 
     receive() external payable {}
 
-    function setUp() public {
+    function setUp() public {}
 
-    }
-
-    function testWethDeployment() public {
+    function test_WethDeployment() public {
         weth = _deployBytecode(ArtifactStorage.wethBytecode);
 
         // Assert deployment succeeded
@@ -55,11 +53,11 @@ contract UniswapV2 is Test, ArtifactStorage {
         assertEq(newBalance, 0.5 ether, "Balance should be 0.5 Ether");
     }
 
-    function testFactoryDeployment() public {
+    function test_FactoryDeployment() public {
         address feeToSetter = vm.addr(1);
         bytes memory constructorArgs = abi.encode(feeToSetter);
         bytes memory bytecodeWithArgs = abi.encodePacked(ArtifactStorage.uniswapV2Factory, constructorArgs);
-        
+
         uniswapFactory = _deployBytecode(bytecodeWithArgs);
         // Assert the deployment succeeded
         assertTrue(uniswapFactory != address(0), "Uniswap Factory deployment failed");
@@ -84,7 +82,7 @@ contract UniswapV2 is Test, ArtifactStorage {
         assertEq(pair, retrievedPair, "Retrieved pair address does not match created pair");
     }
 
-    function testRouterDeployment() public {
+    function test_RouterDeployment() public {
         // Deploy WETH
         weth = _deployBytecode(ArtifactStorage.wethBytecode);
         assertTrue(weth != address(0), "WETH deployment failed");
@@ -92,7 +90,8 @@ contract UniswapV2 is Test, ArtifactStorage {
         // Deploy Factory
         address feeToSetter = vm.addr(1);
         bytes memory factoryConstructorArgs = abi.encode(feeToSetter);
-        bytes memory factoryBytecodeWithArgs = abi.encodePacked(ArtifactStorage.uniswapV2Factory, factoryConstructorArgs);
+        bytes memory factoryBytecodeWithArgs =
+            abi.encodePacked(ArtifactStorage.uniswapV2Factory, factoryConstructorArgs);
         uniswapFactory = _deployBytecode(factoryBytecodeWithArgs);
         assertTrue(uniswapFactory != address(0), "Uniswap Factory deployment failed");
 
