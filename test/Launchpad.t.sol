@@ -17,7 +17,7 @@ contract LaunchpadTest is Test, ArtifactStorage {
     receive() external payable {}
 
     function setUp() public {
-        // WETH9 deployment
+        // WETH9 deployment (still needed for Uniswap)
         weth = _deployBytecode(ArtifactStorage.wethBytecode);
         require(weth != address(0), "WETH deployment failed");
 
@@ -40,7 +40,7 @@ contract LaunchpadTest is Test, ArtifactStorage {
         require(address(implementation) != address(0), "Implementation deployment failed");
 
         // LaunchpadFactory deployment
-        launchpadFactory = new LaunchpadFactory(address(implementation), weth, uniswapRouter);
+        launchpadFactory = new LaunchpadFactory(address(implementation), uniswapRouter);
         require(address(launchpadFactory) != address(0), "LaunchpadFactory deployment failed");
     }
 
@@ -53,7 +53,6 @@ contract LaunchpadTest is Test, ArtifactStorage {
         assertTrue(launchpad != address(0), "Launchpad creation failed");
 
         Launchpad proxy = Launchpad(payable(launchpad));
-        assertEq(address(proxy.weth()), weth, "WETH address mismatch");
         assertEq(address(proxy.uniswapRouter()), uniswapRouter, "Uniswap Router address mismatch");
 
         uint256 ethAmount = 0.5 ether;
@@ -94,8 +93,6 @@ contract LaunchpadTest is Test, ArtifactStorage {
         assertTrue(launchpad != address(0), "Launchpad creation failed");
 
         Launchpad proxy = Launchpad(payable(launchpad));
-
-        assertEq(address(proxy.weth()), weth, "WETH address mismatch");
         assertEq(address(proxy.uniswapRouter()), uniswapRouter, "Uniswap Router address mismatch");
 
         // Buy 99 tokens
