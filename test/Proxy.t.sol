@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity 0.8.28;
 
 import "forge-std/Test.sol";
 import "../src/Launchpad.sol";
@@ -30,7 +30,7 @@ contract ProxyTest is Test, ArtifactStorage {
         string memory tokenName = "TestToken";
         string memory tokenSymbol = "TT";
 
-        // WETH9 deployment
+        // WETH9 deployment (still needed for Uniswap)
         weth = _deployBytecode(ArtifactStorage.wethBytecode);
         require(weth != address(0), "WETH deployment failed");
 
@@ -53,12 +53,11 @@ contract ProxyTest is Test, ArtifactStorage {
         require(address(implementation) != address(0), "Implementation deployment failed");
 
         // LaunchpadFactory deployment
-        launchpadFactory = new LaunchpadFactory(address(implementation), weth, uniswapRouter);
+        launchpadFactory = new LaunchpadFactory(address(implementation), uniswapRouter);
         require(address(launchpadFactory) != address(0), "LaunchpadFactory deployment failed");
 
         address proxyAddress = launchpadFactory.createLaunchpad(tokenName, tokenSymbol);
         proxy = Launchpad(payable(proxyAddress));
-        assertEq(address(proxy.weth()), weth, "WETH address mismatch");
         assertEq(address(proxy.uniswapRouter()), uniswapRouter, "Uniswap Router address mismatch");
 
         // Setup test accounts
@@ -87,7 +86,7 @@ contract ProxyTest is Test, ArtifactStorage {
         assertEq(tokensReceived, expectedTokens, "Received tokens should match expected");
         assertEq(proxy.token().balanceOf(alice), initialTokenBalance + tokensReceived, "Token balance mismatch");
         assertEq(proxy.ethSupply(), initialEthSupply + buyAmount, "ETH supply not updated correctly");
-        assertEq(IERC20(address(proxy.weth())).balanceOf(address(proxy)), buyAmount, "WETH balance incorrect");
+        assertEq(address(proxy).balance, buyAmount, "Contract ETH balance incorrect");
     }
 
     function test_MultipleBuysIncreasePrices() public {
@@ -119,7 +118,7 @@ contract ProxyTest is Test, ArtifactStorage {
 
         // Get expected ETH return
         uint256 expectedEthReturn = proxy.getEthersOutAtCurrentSupply(tokensBought);
-        uint256 initialWethBalance = IERC20(address(proxy.weth())).balanceOf(address(proxy));
+        uint256 initialContractBalance = address(proxy).balance;
         uint256 initialAliceEthBalance = address(alice).balance;
 
         // Sell tokens
@@ -129,9 +128,7 @@ contract ProxyTest is Test, ArtifactStorage {
         assertEq(ethReceived, expectedEthReturn, "ETH received should match expected");
         assertEq(address(alice).balance, initialAliceEthBalance + ethReceived, "ETH balance not updated correctly");
         assertEq(
-            IERC20(address(proxy.weth())).balanceOf(address(proxy)),
-            initialWethBalance - ethReceived,
-            "WETH balance not updated correctly"
+            address(proxy).balance, initialContractBalance - ethReceived, "Contract ETH balance not updated correctly"
         );
         assertEq(proxy.token().balanceOf(alice), 0, "Should have no tokens left");
     }
@@ -166,7 +163,7 @@ contract ProxyTest is Test, ArtifactStorage {
 
         assertTrue(proxy.isMigrated(), "Should be migrated after threshold");
         assertEq(address(alice).balance, INITIAL_ETH_BALANCE - thresholdAmount, "Excess ETH should be refunded");
-        assertEq(IERC20(address(proxy.weth())).balanceOf(address(proxy)), 0, "WETH balance incorrect after migration");
+        assertEq(address(proxy).balance, 0, "Contract ETH balance should be 0 after migration");
         vm.stopPrank();
     }
 
@@ -201,7 +198,7 @@ contract ProxyTest is Test, ArtifactStorage {
         // Record initial balances
         uint256 initialAliceEthBalance = address(alice).balance;
         uint256 initialTokenBalance = proxy.token().balanceOf(alice);
-        uint256 initialWethBalance = IERC20(address(proxy.weth())).balanceOf(address(proxy));
+        uint256 initialContractBalance = address(proxy).balance;
 
         // Try to buy with minimum output higher than possible
         vm.startPrank(alice);
@@ -212,11 +209,7 @@ contract ProxyTest is Test, ArtifactStorage {
         // Verify balances remained unchanged
         assertEq(address(alice).balance, initialAliceEthBalance, "Alice ETH balance should be unchanged");
         assertEq(proxy.token().balanceOf(alice), initialTokenBalance, "Token balance should be unchanged");
-        assertEq(
-            IERC20(address(proxy.weth())).balanceOf(address(proxy)),
-            initialWethBalance,
-            "WETH balance should be unchanged"
-        );
+        assertEq(address(proxy).balance, initialContractBalance, "Contract ETH balance should be unchanged");
     }
 
     function _deployBytecode(bytes memory bytecode) internal returns (address addr) {

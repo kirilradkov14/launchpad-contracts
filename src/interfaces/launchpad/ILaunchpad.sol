@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity 0.8.28;
 
 interface ILaunchpad {
-    function initialize(address _tokenAddress, address _wethAddress, address _uniswapRouter) external;
+    function initialize(address _tokenAddress, address _uniswapRouter) external;
 
     function buyTokens(uint256 amountOutMin) external payable returns (uint256 amountOut);
 
