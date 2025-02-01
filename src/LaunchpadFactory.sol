@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity 0.8.28;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
@@ -14,14 +14,12 @@ contract LaunchpadFactory is Ownable(msg.sender), Pausable, ILaunchpadFactory {
     uint256 public constant TOTAL_SUPPLY = 1_000_000_000 ether;
 
     address public immutable implementation;
-    address public immutable wethAddress;
     address public immutable uniswapV2Router;
     address public immutable tokenDeployer;
 
     address[] public allLaunchpads;
 
     error LaunchpadFactoryInvalidImplementation();
-    error LaunchpadFactoryInvalidWETH();
     error LaunchpadFactoryInvalidRouter();
     error LaunchpadFactoryInitializationFailed();
     error LaunchpadFactoryDeployFailed();
@@ -29,13 +27,11 @@ contract LaunchpadFactory is Ownable(msg.sender), Pausable, ILaunchpadFactory {
 
     event LaunchpadCreation(address indexed launchpad, address indexed token);
 
-    constructor(address _implementation, address _weth, address _uniswapV2Router) {
+    constructor(address _implementation, address _uniswapV2Router) {
         if (_implementation == address(0)) revert LaunchpadFactoryInvalidImplementation();
-        if (_weth == address(0)) revert LaunchpadFactoryInvalidWETH();
         if (_uniswapV2Router == address(0)) revert LaunchpadFactoryInvalidRouter();
 
         implementation = _implementation;
-        wethAddress = _weth;
         uniswapV2Router = _uniswapV2Router;
     }
 
@@ -66,7 +62,7 @@ contract LaunchpadFactory is Ownable(msg.sender), Pausable, ILaunchpadFactory {
 
         address token = _deployToken(launchpad, _name, _symbol);
 
-        bytes memory data = abi.encodeCall(ILaunchpad.initialize, (token, wethAddress, uniswapV2Router));
+        bytes memory data = abi.encodeCall(ILaunchpad.initialize, (token, uniswapV2Router));
         (bool success,) = launchpad.call(data);
 
         if (!success) revert LaunchpadFactoryInitializationFailed();

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity 0.8.28;
 
 import "forge-std/Test.sol";
 import "../src/Launchpad.sol";
@@ -18,7 +18,7 @@ contract LaunchpadFuzzTest is Test, ArtifactStorage {
     receive() external payable {}
 
     function setUp() public {
-        // WETH9 deployment
+        // WETH9 deployment (still needed for Uniswap)
         weth = _deployBytecode(ArtifactStorage.wethBytecode);
         require(weth != address(0), "WETH deployment failed");
 
@@ -40,7 +40,7 @@ contract LaunchpadFuzzTest is Test, ArtifactStorage {
         require(address(implementation) != address(0), "Implementation deployment failed");
 
         // LaunchpadFactory deployment
-        launchpadFactory = new LaunchpadFactory(address(implementation), weth, uniswapRouter);
+        launchpadFactory = new LaunchpadFactory(address(implementation), uniswapRouter);
         require(address(launchpadFactory) != address(0), "LaunchpadFactory deployment failed");
 
         // Create a proxy instance for testing
